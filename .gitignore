@@ -5,3 +5,5 @@ airflow-webserver.pid
 airflow.db
 webserver_config.py
 airflow.cfg
+include/configs/creds/string_test.py
+include/helpers/pendulum_test.ipynb

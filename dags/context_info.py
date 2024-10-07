@@ -1,5 +1,6 @@
 from pprint import pprint
-from pendulum import datetime
+import pendulum
+from datetime import datetime,timedelta
 
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
@@ -8,12 +9,39 @@ from airflow.models import Variable
 
 
 
+start_date = abs(-1)
+tags=['context']
+schedule = '0 3 * * *'  #'@daily'  #timedelta(minutes=30) #None
+
+
+def dur(intv):
+    duration = int(intv.split(" ")[0])
+    intr = str(intv.split(" ")[1])
+    factor = -1 if str(intv.split(" ")[2]) == 'ago' else 1 
+    #print(duration,intr,factor)   
+
+    if intr == 'hour' or intr == 'hours':
+         return timedelta(hours = duration )
+    elif intr == 'minute' or intr == 'minutes':
+         return timedelta(minutes = duration )
+    elif intr == 'second' or intr == 'seconds':
+         return timedelta(seconds = duration )
+    elif intr == 'millisecond' or intr == 'milliseconds':
+         return timedelta(milliseconds = duration )    
+    else:
+         return timedelta(days = duration )
+    
+#interval("10 millisecond ago") 
+
+dur1 = dur('2 hours ago')
+print(dur1)
+
 with DAG(
     dag_id='context_dag',
     description='A simple tutorial DAG',
-    schedule = '@daily',
-    start_date=datetime(2024 ,1,1),
-    tags=['context'],
+    schedule = schedule,
+    start_date= datetime.now() + dur('2 hours ago'),
+    tags=tags,
     catchup = False
 ) as dag:
    
