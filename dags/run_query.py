@@ -66,7 +66,7 @@ with DAG(
 
 
    #using params to fetch connection values using Jinja conn accessor
-  def fetch_lastrundate_using_params(**context):
+  def fetch_lastrundate_using_context(**context):
       
       #convert extra string to dict
       extra_dejson = json.loads( context['conn'].get('snow_conn_default').extra)
@@ -109,19 +109,20 @@ with DAG(
       return complete_fl[0]
       
   
-  #NOT working!
-  check_EDB_Completion_status_with_params = PythonOperator(
-              task_id="check_EDB_Completion_status_with_params",
-              python_callable=fetch_lastrundate_using_params, 
-              params = {     #DOESN'T WORK , TREATS AS LITERAL STRING VALUES INSTEAD OF JINJA RESOLVED AT PARSE TIME
-                       "user": '{{ conn.snow_conn_default.login }}',   
-                       'password' : '{{ conn.snow_conn_default.password }}',                       
-                        'schema': '{{ conn.snow_conn_default.schema }}' ,   
-                        'role': '{{ conn.snow_conn_default.role }}',                                           
-                        'account': '{{ conn.snow_conn_default.extra_dejson.account }}',
-                        'warehouse': '{{ conn.snow_conn_default.extra_dejson.warehouse }}',
-                       'database': '{{ conn.snow_conn_default.extra_dejson.database }}'
-                        }
+  #NOT working jinja in params option for python operator!
+  check_EDB_Completion_status_context = PythonOperator(
+              task_id="check_EDB_Completion_status_with_context",
+              python_callable=fetch_lastrundate_using_context, 
+          #     params = {     # PARAMS DOESN'T WORK , TREATS AS LITERAL STRING VALUES INSTEAD OF JINJA RESOLVED AT PARSE TIME
+          #              "user": '{{ conn.snow_conn_default.login }}',   
+          #              'password' : '{{ conn.snow_conn_default.password }}',                       
+          #               'schema': '{{ conn.snow_conn_default.schema }}' ,   
+          #               'role': '{{ conn.snow_conn_default.role }}',                                           
+          #               'account': '{{ conn.snow_conn_default.extra_dejson.account }}',
+          #               'warehouse': '{{ conn.snow_conn_default.extra_dejson.warehouse }}',
+          #              'database': '{{ conn.snow_conn_default.extra_dejson.database }}'
+          #               }
+          
           )
 
 
@@ -133,15 +134,10 @@ with DAG(
   )
 
 
-  #   #use jinja conn in bash
-  # fetch_status = PythonOperator(
-  #     task_id="fetch_status",
-  #      ti.xcom_pull(task_ids = 'check_EDB_Completion_status_with_params' , key = 'return_value') }}. '"
-  # )
 
   End = EmptyOperator(
      task_id = "End"
   )
 
-  check_EDB_Completion_status  >> check_EDB_Completion_status_with_params  >> fetch_status >> End
+  check_EDB_Completion_status  >> check_EDB_Completion_status_context  >> fetch_status >> End
    
