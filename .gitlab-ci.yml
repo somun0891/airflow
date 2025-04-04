@@ -1,0 +1,24 @@
+image: alpine:latest
+
+create-pages:
+  pages:
+    publish: dbt-lineage
+  # artifacts:
+  #   paths:
+  #     - dist
+  rules:
+    # This ensures that only pushes to the default branch will trigger
+    # a pages deploy
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+
+  script:
+    - echo "Deploying to GitLab Pages..."
+    - mkdir .dbt-lineage
+    - cp -r lineagex/* .dbt-lineage
+    - mv .dbt-lineage dbt-lineage
+    - ls -1 lineagex
+    - ls -R
+    # - cat ./dbt-lineage/index.html
+
+  # only:
+  #   - develop # or master
